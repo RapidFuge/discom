@@ -1,0 +1,17 @@
+# Packages
+node_modules/
+yarn.lock
+
+# Log files
+logs/
+*.log
+
+# Miscellaneous
+.tmp/
+.vscode/
+.idea/
+.dist/
+
+docs/main.json
+tsconfig.tsbuildinfo
+dist/

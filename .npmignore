@@ -1,0 +1,16 @@
+src/
+test/
+example/
+docs/
+
+.eslintignore
+.gitattributes
+.gitignore
+.npmignore
+.eslintrc.json
+.github/
+
+package-lock.json
+tsconfig.tsbuildinfo
+tsconfig.json
+renovate.json
