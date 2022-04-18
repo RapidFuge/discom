@@ -71,15 +71,13 @@ export class EventHandling {
 
                 if (cooldown?.cooldown) return message.reply(getCooldownMessage());
 
-                const isNotGuild = guild => !commandos.guildOnly.includes(guild);
+                const isNotGuild = guild => !commandos.guildId.includes(guild);
 
-                if (isNotDm && commandos.guildOnly.length && isNotGuild(message.guild.id)) return;
+                if (isNotDm && commandos.guildId.length && isNotGuild(message.guild.id)) return;
 
-                if (commandos.userOnly) {
-                    if (typeof commandos.userOnly === 'object') {
-                        const users = commandos.userOnly.some(v => message.author.id === v);
-                        if (!users) return;
-                    } else if (message.author.id !== commandos.userOnly) { return; }
+                if (commandos.userId.length) {
+                    const users = commandos.userId.some(v => message.author.id === v);
+                    if (!users) return;
                 }
 
                 if (isNotDm && commandos.channelOnly) {
@@ -105,19 +103,19 @@ export class EventHandling {
 
                 const getMissingClientPermissionsMessage = () => this.client.languageFile.MISSING_CLIENT_PERMISSIONS[language].replace('{PERMISSION}', commandos.clientRequiredPermissions.map(v => Util.unescape(v, '_', ' ')).join(', '));
 
-                if (isNotDm && commandos.clientRequiredPermissions) {
+                if (isNotDm && commandos.clientRequiredPermissions.length) {
                     if ((message.channel as any).permissionsFor(message.guild.me).missing(commandos.clientRequiredPermissions).length > 0) return message.reply(getMissingClientPermissionsMessage());
                 }
 
                 const getMissingPermissionsMessage = () => this.client.languageFile.MISSING_PERMISSIONS[language].replace('{PERMISSION}', commandos.userRequiredPermissions.map(v => Util.unescape(v, '_', ' ')).join(', '));
 
-                if (isNotDm && commandos.userRequiredPermissions) {
+                if (isNotDm && commandos.userRequiredPermissions.length) {
                     if (!message.member.permissions.has(commandos.userRequiredPermissions)) return message.reply(getMissingPermissionsMessage());
                 }
 
                 const getMissingRolesMessage = () => this.client.languageFile.MISSING_ROLES[language].replace('{ROLES}', `\`${commandos.userRequiredRoles.map(r => message.guild.roles.cache.get(r).name).join(', ')}\``);
 
-                if (isNotDm && commandos.userRequiredRoles) {
+                if (isNotDm && commandos.userRequiredRoles.length) {
                     const roles = commandos.userRequiredRoles.some(v => message.member.roles.cache.get(v));
                     if (!roles) return message.reply(getMissingRolesMessage());
                 }
@@ -219,11 +217,9 @@ export class EventHandling {
 
                 if (cooldown?.cooldown) return interaction.reply(getCooldownMessage());
 
-                if (commandos.userOnly) {
-                    if (typeof commandos.userOnly === 'object') {
-                        const users = commandos.userOnly.some(v => interaction.user.id === v);
-                        if (!users) return;
-                    } else if (interaction.user.id !== commandos.userOnly) { return; }
+                if (commandos.userId.length) {
+                    const users = commandos.userId.some(v => interaction.user.id === v);
+                    if (!users) return;
                 }
 
                 if (isNotDm && commandos.channelOnly) {
@@ -249,7 +245,7 @@ export class EventHandling {
 
                 const getMissingClientPermissionsMessage = () => this.client.languageFile.MISSING_CLIENT_PERMISSIONS[language].replace('{PERMISSION}', commandos.clientRequiredPermissions.map(v => Util.unescape(v, '_', ' ')).join(', '));
 
-                if (isNotDm && commandos.clientRequiredPermissions) {
+                if (isNotDm && commandos.clientRequiredPermissions.length) {
                     if (interaction.guild.channels.cache.get(interaction.channel.id).permissionsFor(interaction.guild.me).missing(commandos.clientRequiredPermissions).length > 0) {
                         return interaction.reply({
                             content: getMissingClientPermissionsMessage(),
@@ -260,7 +256,7 @@ export class EventHandling {
 
                 const getMissingPermissionsMessage = () => this.client.languageFile.MISSING_PERMISSIONS[language].replace('{PERMISSION}', commandos.userRequiredPermissions.map(v => Util.unescape(v, '_', ' ')).join(', '));
 
-                if (isNotDm && commandos.userRequiredPermissions) {
+                if (isNotDm && commandos.userRequiredPermissions.length) {
                     if (!interaction.member.permissions.has(commandos.userRequiredPermissions)) {
                         return interaction.reply({
                             content: getMissingPermissionsMessage(),
@@ -271,7 +267,7 @@ export class EventHandling {
 
                 const getMissingRolesMessage = () => this.client.languageFile.MISSING_ROLES[language].replace('{ROLES}', `\`${commandos.userRequiredRoles.map(r => interaction.guild.roles.cache.get(r).name).join(', ')}\``);
 
-                if (isNotDm && commandos.userRequiredRoles) {
+                if (isNotDm && commandos.userRequiredRoles.length) {
                     const roles = commandos.userRequiredRoles.some(v => interaction.member.roles.cache.get(v));
                     if (!roles) return interaction.reply({ content: getMissingRolesMessage(), ephemeral: true });
                 }

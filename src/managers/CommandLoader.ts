@@ -1,6 +1,6 @@
 /* eslint-disable prefer-promise-reject-errors */
 import type { DiscomClient } from '../base/Client';
-import type { ApplicationCommand, Collection } from 'discord.js';
+import type { ApplicationCommand, Collection, Snowflake } from 'discord.js';
 import { Color } from '../structures/Color';
 import { DiscomError } from '../structures/DiscomError';
 import { Events, ApplicationCommandTypesRaw, ArgumentType } from '../util/Constants';
@@ -90,11 +90,11 @@ export class CommandLoader {
 
             let url = `https://discord.com/api/v9/applications/${this.client.user.id}/commands`;
 
-            const loadSlashCommand = async (guildOnly?: string) => {
+            const loadSlashCommand = async (guildId?: string) => {
                 if (this.client.loadFromCache) {
                     let ifAlready;
                     let cache = true;
-                    if (guildOnly) ifAlready = (await Util.__getAllCommands(this.client, guildOnly)).find(c => c.name === cmd.name && c.type === 'CHAT_INPUT');
+                    if (guildId) ifAlready = (await Util.__getAllCommands(this.client, guildId)).find(c => c.name === cmd.name && c.type === 'CHAT_INPUT');
                     else ifAlready = (await this._allGlobalCommands).find(c => c.name === cmd.name && c.type === 'CHAT_INPUT');
 
                     if (ifAlready) {
@@ -103,6 +103,7 @@ export class CommandLoader {
                                 if (ifAlready.description !== cmd.description) { cache = false; }
                                 cmd.args.forEach(a => {
                                     ifAlready.options.forEach(a2 => {
+                                        if (Object.keys(a2).length !== Object.keys(a).length) cache = false;
                                         if (a.name !== a2.name) cache = false;
                                         if (a.description !== a2.description) cache = false;
                                         if (a.required !== a2.required) cache = false;
@@ -149,7 +150,7 @@ export class CommandLoader {
                         description: cmd.description,
                         options: finalArgs,
                         type: 1,
-                        default_permission: guildOnly ? (cmd.userId || cmd.channelTextOnly) === undefined : true,
+                        default_permission: guildId ? (cmd.userId || cmd.channelTextOnly) === undefined : true,
                         channel_types: finalArgs.some(a => a.channel_types) || null,
                     }),
                     url,
@@ -210,11 +211,11 @@ export class CommandLoader {
             if (!cmd.context && String(this.client.context) === 'false') continue;
 
             let url = `https://discord.com/api/v9/applications/${this.client.user.id}/commands`;
-            const loadContextMenu = async (guildOnly?: string) => {
+            const loadContextMenu = async (guildId?: Snowflake) => {
                 if (this.client.loadFromCache) {
                     let ifAlready;
                     let cache = true;
-                    if (guildOnly) ifAlready = (await Util.__getAllCommands(this.client, guildOnly)).find(c => c.name === cmd.name && ['USER', 'MESSAGE'].includes(c.type));
+                    if (guildId) ifAlready = (await Util.__getAllCommands(this.client, guildId)).find(c => c.name === cmd.name && ['USER', 'MESSAGE'].includes(c.type));
                     else ifAlready = (await this._allGlobalCommands).find(c => c.name === cmd.name && ['USER', 'MESSAGE'].includes(c.type));
 
                     if (ifAlready) {

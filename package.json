@@ -1,6 +1,6 @@
 {
   "name": "discom",
-  "version": "2.0.4",
+  "version": "2.0.8",
   "description": "A simple discord.js handler that can handle events, slash, and message commands.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
