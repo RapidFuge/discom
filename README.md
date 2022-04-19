@@ -1,1 +1,1 @@
-Cry as you might GCommand Devs I can and will use this for personal use.
+Thanks to gcommands for being a thorn on my ass for not understanding the exact rules of MIT and wanting credits for their lazily made code.

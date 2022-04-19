@@ -17,6 +17,6 @@ export class AttachmentArgumentType extends ArgumentType {
     }
 
     public get(argument, message) {
-        return message.attachments?.first();
+        return message.attachments?.first().url;
     }
 }
