@@ -1,1 +1,3 @@
-Thanks to gcommands for being a thorn on my ass for not understanding the exact rules of MIT and wanting credits for their lazily made code.
+# Discom
+
+License info here: https://discom.rocks/LICENSE 
