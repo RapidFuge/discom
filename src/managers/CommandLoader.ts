@@ -45,7 +45,7 @@ export class CommandLoader {
 
             this.client.commands.set(file.name, file);
             if (file && file.aliases && Array.isArray(file.aliases)) file.aliases.forEach(alias => this.client.aliases.set(alias, file.name));
-            this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (File): &e➜ &3${fileName}`, { json: false }).getText());
+            this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (File) &e➜ &3${fileName}`, { json: false }).getText());
         }
 
         await this.__loadSlashCommands();
@@ -75,7 +75,7 @@ export class CommandLoader {
 
             this.client.commands.set(file.name, file);
             if (file && file.aliases && Array.isArray(file.aliases)) file.aliases.forEach(alias => this.client.aliases.set(alias, file.name));
-            this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (File): &e➜ &3${fileName}`, { json: false }).getText());
+            this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (File) &e➜ &3${fileName}`, { json: false }).getText());
         }
     }
 
@@ -99,7 +99,7 @@ export class CommandLoader {
 
                     if (ifAlready) {
                         if (ifAlready.defaultPermission) {
-                            if ((cmd.userId || cmd.channelTextOnly) === undefined) {
+                            if (!cmd.userId.length || !cmd.channelTextOnly) {
                                 if (ifAlready.description !== cmd.description) { cache = false; }
                                 cmd.args.forEach(a => {
                                     ifAlready.options.forEach(a2 => {
@@ -115,11 +115,11 @@ export class CommandLoader {
                                     });
                                 });
                             }
-                        } else if ((cmd.userId || cmd.channelTextOnly) !== undefined) { cache = false; }
+                        } else if (cmd.userId.length || cmd.channelTextOnly) { cache = false; }
                     } else { cache = false; }
 
                     if (cache) {
-                        this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded from cache (Slash): &e➜ &3${cmd.name}`, { json: false }).getText());
+                        this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded from cache (Slash) &e➜ &3${cmd.name}`, { json: false }).getText());
                         return;
                     }
                 }
@@ -150,14 +150,14 @@ export class CommandLoader {
                         description: cmd.description,
                         options: finalArgs,
                         type: 1,
-                        default_permission: guildId ? (cmd.userId || cmd.channelTextOnly) === undefined : true,
+                        default_permission: guildId ? !cmd.userId.length || !cmd.channelTextOnly : true,
                         channel_types: finalArgs.some(a => a.channel_types) || null,
                     }),
                     url,
                 };
 
                 fetch(config.url, config)
-                    .then(async x => x.ok ? this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Slash): &e➜ &3${cmd.name}`, { json: false }).getText()) : Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() }))
+                    .then(async x => x.ok ? this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Slash) &e➜ &3${cmd.name}`, { json: false }).getText()) : Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() }))
                     .catch(error => {
                         this.client.emit(Events.LOG, new Color(`&3[Discom] ${error ? error.status === 429 ? `&aWait &e${ms(error.data.retry_after * 1000)}` : `&e${error.status}` : ''} &c${error.statusText} &e(${cmd.name})`, { json: false }).getText());
 
@@ -224,7 +224,7 @@ export class CommandLoader {
                     } else { cache = false; }
 
                     if (cache) {
-                        this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded from cache (Context Menu): &e➜ &3${cmd.name}`, { json: false }).getText());
+                        this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded from cache (Context Menu) &e➜ &3${cmd.name}`, { json: false }).getText());
                         return;
                     }
                 }
@@ -247,7 +247,7 @@ export class CommandLoader {
                     .then(async x => {
                         if (!x.ok) return Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() });
 
-                        this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Context Menu (user)): &e➜ &3${cmd.name}`, { json: false }).getText());
+                        this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Context Menu (user)) &e➜ &3${cmd.name}`, { json: false }).getText());
                         if (type === 4) {
                             config.body = JSON.stringify({
                                 name: cmd.contextMenuName || cmd.name,
@@ -308,7 +308,7 @@ export class CommandLoader {
         for (const commandName in keys) {
             const cmd = this.client.commands.get(keys[commandName]);
 
-            if ((cmd.userId || cmd.channelTextOnly) === undefined) continue;
+            if (!cmd.userId.length || !cmd.channelTextOnly) continue;
 
             const loadCommandPermission = async (apiCommands: Collection<string, ApplicationCommand>) => {
                 for (const apiCommand of apiCommands) {
@@ -316,9 +316,7 @@ export class CommandLoader {
                     const loadApiCmd = async () => {
                         const finalData = [];
 
-                        if (cmd.userRequiredRoles) {
-                            if (!Array.isArray(cmd.userRequiredRoles)) cmd.userRequiredRoles = [cmd.userRequiredRoles];
-
+                        if (cmd.userRequiredRoles.length) {
                             for await (const roleId of cmd.userRequiredRoles) {
                                 finalData.push({
                                     id: roleId,
@@ -328,7 +326,7 @@ export class CommandLoader {
                             }
                         }
 
-                        if (cmd.userId) {
+                        if (cmd.userId.length) {
                             for await (const userId of cmd.userId) {
                                 finalData.push({
                                     id: userId,
@@ -351,7 +349,7 @@ export class CommandLoader {
                         };
 
                         fetch(config.url, config)
-                            .then(async x => x.ok ? this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Permission): &e➜ &3${cmd.name}`, { json: false }).getText()) : Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() }))
+                            .then(async x => x.ok ? this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Permission) &e➜ &3${cmd.name}`, { json: false }).getText()) : Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() }))
                             .catch(error => {
                                 this.client.emit(Events.LOG, new Color(`&3[Discom] ${error ? error.status === 429 ? `&aWait &e${ms(error.data.retry_after * 1000)}` : `&e${error.status}` : ''} &c${error.statusText} &e(${cmd.name})`, { json: false }).getText());
 
@@ -404,7 +402,7 @@ export class CommandLoader {
 
     private __tryAgain(cmd, config, type) {
         fetch(config.url, config)
-            .then(async x => x.ok ? this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (${type}): &e➜ &3${cmd.name}`, { json: false }).getText()) : Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() }))
+            .then(async x => x.ok ? this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (${type}) &e➜ &3${cmd.name}`, { json: false }).getText()) : Promise.reject({ status: x.status, statusText: x.statusText, data: await x.json() }))
             .catch(error => {
                 this.client.emit(Events.LOG, new Color(`&3[Discom] ${error ? error.status === 429 ? `&aWait &e${ms(error.data.retry_after * 1000)}` : `&e${error.status}` : ''} &c${error.statusText} &e(${cmd.name})`, { json: false }).getText());
 
@@ -438,7 +436,7 @@ export class CommandLoader {
             else if (command.guildId.length) Util.__deleteCmd(this.client, cmd.id);
             else continue;
 
-            this.client.emit(Events.LOG, new Color(`&3[Discom] &aDeleted ${cmd.type === 'CHAT_INPUT' ? 'Slash' : 'Context'}: &e➜ &3${cmd.name}`, { json: false }).getText());
+            this.client.emit(Events.LOG, new Color(`&3[Discom] &aDeleted ${cmd.type === 'CHAT_INPUT' ? 'Slash' : 'Context'} &e➜ &3${cmd.name}`, { json: false }).getText());
         }
 
         const guilds = this.client.guilds.cache.map(guild => guild.id);
@@ -461,7 +459,7 @@ export class CommandLoader {
                 else if (!(command.guildId.length && command.guildId.includes(guild))) Util.__deleteCmd(this.client, cmd.id, guild);
                 else continue;
 
-                this.client.emit(Events.LOG, new Color(`&3[Discom] &aDeleted ${cmd.type === 'CHAT_INPUT' ? 'Slash' : 'Context'} (guild: ${guild}): &e➜ &3${cmd.name}`, { json: false }).getText());
+                this.client.emit(Events.LOG, new Color(`&3[Discom] &aDeleted ${cmd.type === 'CHAT_INPUT' ? 'Slash' : 'Context'} (guild: ${guild}) &e➜ &3${cmd.name}`, { json: false }).getText());
             }
         }
     }

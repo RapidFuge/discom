@@ -1,6 +1,6 @@
 {
   "name": "discom",
-  "version": "2.0.8",
+  "version": "2.1.0",
   "description": "A simple discord.js handler that can handle events, slash, and message commands.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -39,7 +39,7 @@
   },
   "keywords": [],
   "author": "RapidFuge",
-  "license": "MIT",
+  "license": "Unlicense",
   "engines": {
     "node": ">=16.14"
   }
