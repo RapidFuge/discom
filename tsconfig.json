@@ -15,11 +15,11 @@
         "importsNotUsedAsValues": "error",
         "incremental": true,
         "lib": [
-            "esnext"
+            "es6"
         ],
-        "module": "CommonJS",
+        "module": "commonjs",
         "moduleResolution": "Node",
-        "newLine": "lf",
+        "newLine": "crlf",
         "noEmitHelpers": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": false,
@@ -27,9 +27,9 @@
         "noUnusedParameters": false,
         "preserveConstEnums": true,
         "pretty": true,
-        "removeComments": false,
+        "removeComments": true,
         "resolveJsonModule": true,
-        "target": "ES2020",
+        "target": "ES6",
         "skipLibCheck": true,
         "composite": true,
         "sourceMap": false

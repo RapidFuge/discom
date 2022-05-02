@@ -3,21 +3,11 @@
   "version": "2.1.0",
   "description": "A simple discord.js handler that can handle events, slash, and message commands.",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./*": {
-      "import": "./*.js",
-      "require": "./*.js"
-    }
-  },
   "scripts": {
     "test": "eslint .",
-    "build": "npx tsc -p . && gen-esm-wrapper dist/index.js dist/index.mjs"
+    "build": "npx tsc -p .",
+    "build:docs": "typedoc --json docs/out-main.json src/ && node docs/docs.mjs"
   },
   "dependencies": {
     "discord.js": "^13.5.0",
@@ -33,13 +23,12 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-prettier": "^3.4.1",
-    "gen-esm-wrapper": "^1.1.3",
     "keyv": "^4.1.1",
     "typescript": "^4.5.5"
   },
   "keywords": [],
   "author": "RapidFuge",
-  "license": "Unlicense",
+  "license": "MIT",
   "engines": {
     "node": ">=16.14"
   }

@@ -3,7 +3,7 @@ export * from './base/Client';
 export * from './base/Dispatcher';
 
 // Loaders
-export * from './managers/EventHandling';
+export * from './managers/EventHandler';
 export * from './managers/CommandLoader';
 export * from './managers/EventLoader';
 export * from './managers/DatabaseLoader';

@@ -1,7 +1,7 @@
 import type { DiscomClient, GuildLanguageTypes } from '../base/Client';
 import type { AutocompleteRunOptions } from '../structures/Argument';
 import type { Command, CommandRunOptions } from '../structures/Command';
-import type { AutocompleteInteraction, GuildMember, Guild, Message } from 'discord.js';
+import type { AutocompleteInteraction, GuildMember, Guild, Message, User } from 'discord.js';
 import { readdirSync } from 'fs';
 import { ArgumentManager } from '../structures/ArgumentManager';
 import { DiscomError } from '../structures/DiscomError';
@@ -11,9 +11,9 @@ import { Util } from '../util/util';
 import ms from 'ms';
 
 /**
- * The Event Handling class.
+ * The Event EventHandler class.
  */
-export class EventHandling {
+export class EventHandler {
     public client: DiscomClient;
 
     constructor(client: DiscomClient) {
@@ -75,9 +75,11 @@ export class EventHandling {
 
                 if (isNotDm && commandos.guildId.length && isNotGuild(message.guild.id)) return;
 
+                const getUserSpecificMessage = () => this.client.languageFile.USER_SPECIFIC[language].replace(/{COMMAND}/g, commandos.name);
+
                 if (commandos.userId.length) {
                     const users = commandos.userId.some(v => message.author.id === v);
-                    if (!users) return;
+                    if (!users) message.reply(getUserSpecificMessage());
                 }
 
                 if (isNotDm && commandos.channelOnly) {
@@ -86,15 +88,6 @@ export class EventHandling {
                         if (!channels) return;
                     } else if (message.channel.id !== commandos.channelOnly) { return; }
                 }
-
-                const isNotChannelType = type => channelType !== type;
-                const getChannelTextOnlyMessage = () => this.client.languageFile.CHANNEL_TEXT_ONLY[language];
-                const getChannelNewsOnlyMessage = () => this.client.languageFile.CHANNEL_NEWS_ONLY[language];
-                const getChannelThreadOnlyMessage = () => this.client.languageFile.CHANNEL_THREAD_ONLY[language];
-
-                if (isNotDm && commandos.channelTextOnly && isNotChannelType('text')) return message.reply(getChannelTextOnlyMessage());
-                if (isNotDm && commandos.channelNewsOnly && isNotChannelType('news')) return message.reply(getChannelNewsOnlyMessage());
-                if (isNotDm && commandos.channelThreadOnly && isNotChannelType('thread')) return message.reply({ content: getChannelThreadOnlyMessage() });
 
                 const NSFW = message.guild ? commandos.nsfw && !(message.channel as any).nsfw : null;
                 const getNsfwMessage = () => this.client.languageFile.NSFW[language];
@@ -217,9 +210,11 @@ export class EventHandling {
 
                 if (cooldown?.cooldown) return interaction.reply(getCooldownMessage());
 
+                const getUserSpecificMessage = () => this.client.languageFile.USER_SPECIFIC[language].replace(/{COMMAND}/g, commandos.name);
+
                 if (commandos.userId.length) {
                     const users = commandos.userId.some(v => interaction.user.id === v);
-                    if (!users) return;
+                    if (!users) return interaction.reply({ content: getUserSpecificMessage(), ephemeral: true });
                 }
 
                 if (isNotDm && commandos.channelOnly) {
@@ -233,15 +228,6 @@ export class EventHandling {
                 const getNsfwMessage = () => this.client.languageFile.NSFW[language];
 
                 if (isNotDm && NSFW) { return interaction.reply({ content: getNsfwMessage(), ephemeral: true }); }
-
-                const isNotChannelType = type => channelType !== type;
-                const getChannelTextOnlyMessage = () => this.client.languageFile.CHANNEL_TEXT_ONLY[language];
-                const getChannelNewsOnlyMessage = () => this.client.languageFile.CHANNEL_NEWS_ONLY[language];
-                const getChannelThreadOnlyMessage = () => this.client.languageFile.CHANNEL_THREAD_ONLY[language];
-
-                if (isNotDm && commandos.channelTextOnly && isNotChannelType('text')) { return interaction.reply({ content: getChannelTextOnlyMessage(), ephemeral: true }); }
-                if (isNotDm && commandos.channelNewsOnly && isNotChannelType('news')) { return interaction.reply({ content: getChannelNewsOnlyMessage(), ephemeral: true }); }
-                if (isNotDm && commandos.channelThreadOnly && isNotChannelType('thread')) { return interaction.reply({ content: getChannelThreadOnlyMessage(), ephemeral: true }); }
 
                 const getMissingClientPermissionsMessage = () => this.client.languageFile.MISSING_CLIENT_PERMISSIONS[language].replace('{PERMISSION}', commandos.clientRequiredPermissions.map(v => Util.unescape(v, '_', ' ')).join(', '));
 
@@ -337,6 +323,7 @@ export class EventHandling {
                     guild: (interaction.guild as Guild),
                     channel: (interaction.channel as any),
                     member: (interaction.member as GuildMember),
+                    user: (interaction.user as User),
                     language: (await interaction.guild.getLanguage() as GuildLanguageTypes),
                     value: (focused.value as string),
                     respond: (choices = []) => interaction.respond(choices),

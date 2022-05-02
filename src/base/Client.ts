@@ -3,7 +3,7 @@ import type { Event } from '../structures/Event';
 import { CommandLoader } from '../managers/CommandLoader';
 import { Dispatcher } from './Dispatcher';
 import { EventLoader } from '../managers/EventLoader';
-import { EventHandling } from '../managers/EventHandling';
+import { EventHandler } from '../managers/EventHandler';
 import { DatabaseLoader } from '../managers/DatabaseLoader';
 import { Updater } from '../util/updater';
 import { Guild as guild } from '../structures/Guild';
@@ -275,7 +275,7 @@ export class DiscomClient extends DiscordClient {
         new guild;
 
         setTimeout(() => {
-            new EventHandling(this);
+            new EventHandler(this);
             new EventLoader(this);
             new CommandLoader(this);
         }, 1000);

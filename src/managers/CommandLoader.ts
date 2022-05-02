@@ -99,7 +99,7 @@ export class CommandLoader {
 
                     if (ifAlready) {
                         if (ifAlready.defaultPermission) {
-                            if (!cmd.userId.length || !cmd.channelTextOnly) {
+                            if (!cmd.userId.length) {
                                 if (ifAlready.description !== cmd.description) { cache = false; }
                                 cmd.args.forEach(a => {
                                     ifAlready.options.forEach(a2 => {
@@ -115,7 +115,7 @@ export class CommandLoader {
                                     });
                                 });
                             }
-                        } else if (cmd.userId.length || cmd.channelTextOnly) { cache = false; }
+                        } else if (cmd.userId.length) { cache = false; }
                     } else { cache = false; }
 
                     if (cache) {
@@ -150,7 +150,7 @@ export class CommandLoader {
                         description: cmd.description,
                         options: finalArgs,
                         type: 1,
-                        default_permission: guildId ? !cmd.userId.length || !cmd.channelTextOnly : true,
+                        default_permission: guildId ? !cmd.userId.length : true,
                         channel_types: finalArgs.some(a => a.channel_types) || null,
                     }),
                     url,
@@ -308,7 +308,7 @@ export class CommandLoader {
         for (const commandName in keys) {
             const cmd = this.client.commands.get(keys[commandName]);
 
-            if (!cmd.userId.length || !cmd.channelTextOnly) continue;
+            if (!cmd.userId.length) continue;
 
             const loadCommandPermission = async (apiCommands: Collection<string, ApplicationCommand>) => {
                 for (const apiCommand of apiCommands) {

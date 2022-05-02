@@ -72,9 +72,6 @@ export interface CommandOptions {
     clientRequiredPermissions?: string | Array<string>;
     userId?: Snowflake | Array<Snowflake>;
     channelId?: Snowflake | Array<Snowflake>;
-    channelTextOnly?: boolean;
-    channelNewsOnly?: boolean;
-    channelThreadOnly?: boolean;
     guildId?: Snowflake | Array<Snowflake>;
     allowDm?: boolean;
     nsfw?: boolean;
@@ -105,9 +102,6 @@ export class Command {
     public userId?: Array<Snowflake>;
     public guildId?: Array<Snowflake>;
     public channelId?: Array<Snowflake>;
-    public channelTextOnly?: boolean;
-    public channelNewsOnly?: boolean;
-    public channelThreadOnly?: boolean;
     public nsfw?: boolean;
     public slash?: OptionsCommandsSlash;
     public context?: OptionsCommandsContext;
@@ -193,21 +187,6 @@ export class Command {
          * @type {Array<Snowflake>}
          */
         this.channelId = options.channelId ? Array.isArray(options.channelId) ? options.channelId : Array(options.channelId) : [];
-        /**
-         * If the command should only respond to text channels.
-         * @type {boolean}
-         */
-        this.channelTextOnly = String(options.channelTextOnly).toLowerCase() === 'true';
-        /**
-         * If the command should only respond to news channels.
-         * @type {boolean}
-         */
-        this.channelNewsOnly = String(options.channelNewsOnly).toLowerCase() === 'true';
-        /**
-         * If the command should only respond to thread channels.
-         * @type {boolean}
-         */
-        this.channelThreadOnly = String(options.channelThreadOnly).toLowerCase() === 'true';
         /**
          * If the command is allowed to respond in the DMs.
          * @type {Array<Snowflake>}

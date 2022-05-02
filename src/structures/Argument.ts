@@ -1,6 +1,6 @@
 import type { DiscomClient, GuildLanguageTypes } from '../base/Client';
 import type { ArgumentChoice, Command, CommandArgsOptions } from './Command';
-import { MessageActionRow, MessageButton, MessageSelectMenu, AutocompleteInteraction, Message, GuildMember, DMChannel, ThreadChannel, NewsChannel, TextChannel, Guild } from 'discord.js';
+import { MessageActionRow, MessageButton, MessageSelectMenu, AutocompleteInteraction, Message, GuildMember, DMChannel, ThreadChannel, NewsChannel, TextChannel, Guild, User } from 'discord.js';
 import { SubCommandArgumentType } from './types/sub_command';
 import { SubCommandGroupArgumentType } from './types/sub_command_group';
 import { StringArgumentType } from './types/string';
@@ -20,6 +20,7 @@ export interface AutocompleteRunOptions {
     client: DiscomClient;
     interaction: AutocompleteInteraction;
     member: GuildMember;
+    user: User;
     guild: Guild;
     channel: TextChannel | NewsChannel | ThreadChannel | DMChannel;
     command: Command;

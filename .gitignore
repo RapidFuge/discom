@@ -15,3 +15,5 @@ logs/
 docs/main.json
 tsconfig.tsbuildinfo
 dist/
+docs/out-main.json
+docs/main.json
