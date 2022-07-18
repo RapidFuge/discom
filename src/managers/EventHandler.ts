@@ -117,6 +117,7 @@ export class EventHandler {
                 if (await collector.get() === false) return;
 
                 const finalArgs = collector.resolve();
+                console.log(finalArgs);
                 let botMessage;
 
                 const runOptions: CommandRunOptions = {
