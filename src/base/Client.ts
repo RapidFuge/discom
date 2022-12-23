@@ -4,28 +4,17 @@ import { CommandLoader } from '../managers/CommandLoader';
 import { Dispatcher } from './Dispatcher';
 import { EventLoader } from '../managers/EventLoader';
 import { EventHandler } from '../managers/EventHandler';
-import { DatabaseLoader } from '../managers/DatabaseLoader';
 import { Updater } from '../util/updater';
-import { Guild as guild } from '../structures/Guild';
-import { Collection, Client as DiscordClient, ClientOptions, ClientEvents, AutocompleteInteraction, ButtonInteraction, SelectMenuInteraction, Guild, GuildMember, VoiceChannel, VoiceState, ContextMenuInteraction, Message, ThreadChannel, Role } from 'discord.js';
+import { Collection, Client as DiscordClient, ClientOptions, ClientEvents, AutocompleteInteraction, ButtonInteraction, StringSelectMenuComponent, Guild, GuildMember, VoiceChannel, VoiceState, ContextMenuCommandInteraction, Message, ThreadChannel, Role, CommandInteraction } from 'discord.js';
 import { readdirSync } from 'fs';
 import { DiscomError } from '../structures/DiscomError';
 
-export type GuildLanguageTypes = 'english' | 'spanish' | 'portuguese' | 'russian' | 'german' | 'czech' | 'slovak' | 'turkish' | 'polish' | 'indonesian' | 'italian' | 'french' | 'tagalog';
-export type OptionsCommandsSlash = 'both' | 'slash' | 'message' | 'false';
+export type GuildLocaleTypes = 'en-US' | 'en-GB' | 'bg' | 'zh-CN' | 'zh-TW' | 'hr' | 'cs' | 'da' | 'nl' | 'fi' | 'fr' | 'de' | 'el' | 'hi' | 'hu' | 'it' | 'ja' | 'ko' | 'lt' | 'no' | 'pl' | 'pt-BR' | 'ro' | 'ru' | 'es-ES' | 'sv-SE' | 'th' | 'tr' | 'uk' | 'vi';
 export type OptionsCommandsContext = 'both' | 'user' | 'message' | 'false';
-export interface DiscomClientArgumentsOptions {
-    deletePrompt?: boolean;
-    deleteInput?: boolean;
-}
 
 export interface DiscomClientCommandsOptions {
-    slash: OptionsCommandsSlash;
     context?: OptionsCommandsContext;
-    caseSensitiveCommands?: boolean;
-    caseSensitivePrefixes?: boolean;
     autoTyping?: boolean;
-    prefix?: string;
     allowDm?: boolean;
     loadFromCache?: boolean;
     defaultCooldown?: string | number;
@@ -33,11 +22,11 @@ export interface DiscomClientCommandsOptions {
 }
 
 export interface DiscomEvents extends ClientEvents {
-    selectMenu: [SelectMenuInteraction];
+    selectMenu: [StringSelectMenuComponent];
     clickButton: [ButtonInteraction];
     autoComplete: [AutocompleteInteraction];
-    contextMenu: [ContextMenuInteraction];
-    commandPrefixChange: [Guild, string];
+    slashCommand: [CommandInteraction];
+    contextMenu: [ContextMenuCommandInteraction];
     commandExecute: [Command, GuildMember];
     commandError: [Command, GuildMember, string];
     commandsLoaded: [Collection<string, Command>];
@@ -48,7 +37,6 @@ export interface DiscomEvents extends ClientEvents {
     log: [string];
     debug: [string];
 
-    guildLanguageChange: [Guild, string];
     guildBoostLevelUp: [Guild, number, number];
     guildBoostLevelDown: [Guild, number, number];
     guildBannerUpdate: [Guild, string, string];
@@ -97,14 +85,12 @@ export interface DiscomEvents extends ClientEvents {
 }
 
 export interface DiscomClientOptions extends ClientOptions {
-    language: GuildLanguageTypes;
+    language: GuildLocaleTypes;
     ownLanguageFile?: any;
     cmdDir: string;
     eventDir?: string;
     autoCategory?: boolean;
-    database?: any;
-    arguments?: DiscomClientArgumentsOptions;
-    commands: DiscomClientCommandsOptions
+    commands?: DiscomClientCommandsOptions;
 }
 
 /**
@@ -112,26 +98,18 @@ export interface DiscomClientOptions extends ClientOptions {
  * @extends {Client}
  */
 export class DiscomClient extends DiscordClient {
-    public caseSensitiveCommands: boolean;
-    public caseSensitivePrefixes: boolean;
     public deleteNonExistent: boolean;
     public cmdDir: string;
     public eventDir: string;
     public autoTyping: boolean;
     public languageFile: any;
-    public language: GuildLanguageTypes;
-    public database?: any;
+    public language: GuildLocaleTypes;
     public categories: string[];
     public commands: Collection<string, Command>;
-    public aliases: Collection<string, string>;
     public events: Collection<string, Event>;
-    public prefix: string;
-    public slash: OptionsCommandsSlash;
     public context: OptionsCommandsContext;
     public loadFromCache: boolean;
     public allowDm: boolean;
-    public deletePrompt: boolean;
-    public deleteInput: boolean;
     public defaultCooldown: string | number;
     public dispatcher: Dispatcher;
     public inhibitors: Map<number, any>;
@@ -144,19 +122,6 @@ export class DiscomClient extends DiscordClient {
         if (!options.cmdDir) throw new DiscomError('[DEFAULT OPTIONS]', 'You must specify the cmdDir');
         if (!options.language) throw new DiscomError('[DEFAULT OPTIONS]', 'You must specify the language');
 
-        const isClientMessageEnabled = ['false', 'slash'].includes(String(options.commands?.slash));
-        if (!isClientMessageEnabled && !options.commands?.prefix) throw new DiscomError('[DEFAULT OPTIONS]', 'You must specify the commands#prefix');
-
-        /**
-         * Whether the command names are case sensitive or not. NOTE: This only works for message commands.
-         * @type {boolean}
-         */
-        this.caseSensitiveCommands = String(options.commands?.caseSensitiveCommands).toLowerCase() === 'true';
-        /**
-         * Whether the prefixes are case sensitive or not. NOTE: This only works for message commands.
-         * @type {boolean}
-         */
-        this.caseSensitivePrefixes = String(options.commands?.caseSensitivePrefixes).toLowerCase() === 'true';
         /**
          * This will delete Application commands that are changed or deleted.
          * @type {boolean}
@@ -187,14 +152,9 @@ export class DiscomClient extends DiscordClient {
 
         /**
          * The language of the bot.
-         * @type {GuildLanguageTypes}
+         * @type {GuildLocaleTypes}
          */
         this.language = options.language;
-        /**
-         * The database.
-         * @type {any}
-         */
-        this.database = options.database;
         /**
          * The categories of the commands.
          * @type {Array<string>}
@@ -206,25 +166,10 @@ export class DiscomClient extends DiscordClient {
          */
         this.commands = new Collection();
         /**
-         * The aliases of the commands.
-         * @type {Collection<string, string>}
-         */
-        this.aliases = new Collection();
-        /**
          * The events.
          * @type {Collection<string, Event>}
          */
         this.events = new Collection();
-        /**
-         * The prefix of the commands.
-         * @type {string}
-         */
-        this.prefix = options.commands?.prefix;
-        /**
-         * Whether the commands that doesn't have slash defined be: Slash Only, Message Only, Both, or Disabled.
-         * @type {OptionsCommandsSlash}
-         */
-        this.slash = options.commands?.slash || 'false';
         /**
          * Whether the commands that doesn't have context defined be: User Only, Message Only, Both, or Disabled.
          * @type {OptionsCommandsContext}
@@ -241,16 +186,6 @@ export class DiscomClient extends DiscordClient {
          */
         this.allowDm = options.commands?.allowDm !== undefined ? String(options.commands?.allowDm).toLowerCase() === 'true' : false;
         /**
-         * Whether the bot should delete the argument prompt or not.
-         * @type {boolean}
-         */
-        this.deletePrompt = options.arguments?.deletePrompt !== undefined ? String(options.arguments?.deletePrompt).toLowerCase() === 'true' : false;
-        /**
-         * Whether the bot should delete the argument input or not.
-         * @type {boolean}
-         */
-        this.deleteInput = options.arguments?.deleteInput !== undefined ? String(options.arguments?.deleteInput).toLowerCase() === 'true' : false;
-        /**
          * The default cooldown of the commands.
          * @type {string | number}
          */
@@ -261,8 +196,6 @@ export class DiscomClient extends DiscordClient {
          */
         this.dispatcher = new Dispatcher(this, true);
 
-        new DatabaseLoader(this);
-
         setImmediate(() => {
             super.on('ready', () => {
                 this.loadSys();
@@ -272,8 +205,6 @@ export class DiscomClient extends DiscordClient {
     }
 
     private loadSys() {
-        new guild;
-
         setTimeout(() => {
             new EventHandler(this);
             new EventLoader(this);

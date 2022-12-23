@@ -11,7 +11,7 @@ export class DiscomError extends Error {
     constructor(name: any, message: any) {
         super(message);
 
-        this.message = new Color(`&c${message}`).getText();
-        this.name = new Color(`&a${name}`).getText();
+        this.message = new Color(`&h${message}`).getText();
+        this.name = new Color(`&3${name}`).getText();
     }
 }

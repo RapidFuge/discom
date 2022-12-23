@@ -1,6 +1,6 @@
-# Deprecated.
+# Comeback.
 
-Discord.js v14 has been released and as usual. it is filled with retarded breaking changes for "the benefit of everyone". I suggest you stop using discord.js and just make your own library instead. I even suggest using eris instead of keeping up with the bullshit changes the 'developers' of discord.js does every second. Fuck discord.js and I sincerely hope they burn down crashing. Pull stack developer out.ss
+Discom is coming back or something probably ¯\\\_(ツ)\_/¯
 
 <!-- <div align="center">
 

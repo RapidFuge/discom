@@ -33,13 +33,13 @@ export class EventLoader {
 
             file = require(`${this.eventDir}/${file}`);
             file.init(this.client);
-            if (!(file instanceof Event)) return console.log(new Color(`&3[EVENT] &cEvent ${fileName} doesnt belong in Events.`).getText());
+            if (!(file instanceof Event)) return console.log(new Color(`&3[EVENT] &hEvent ${fileName} doesnt belong in Events.`).getText());
 
             file._path = `${this.eventDir}/${fileName}${fileType}`;
 
             this.client.events.set(fileName, file);
 
-            this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Event): &e➜ &3${fileName}`, { json: false }).getText());
+            this.client.emit(Events.LOG, new Color(`&b[&3Discom&b] &2Loaded Event: &b➜ &9${fileName}`, { json: false }).getText());
         }
 
         await this.__loadEvents();
@@ -58,12 +58,12 @@ export class EventLoader {
 
             file = require(`${this.eventDir}/${categoryFolder}/${file}`);
             file.init(this.client);
-            if (!(file instanceof Event)) return console.log(new Color(`&3[EVENTS] &cEvent ${fileName} doesnt belong in Events.`).getText());
+            if (!(file instanceof Event)) return console.log(new Color(`&3[EVENTS] &hEvent ${fileName} doesnt belong in Events.`).getText());
 
             file._path = `${this.eventDir}/${categoryFolder}/${fileName}${fileType}`;
 
             this.client.events.set(fileName, file);
-            this.client.emit(Events.LOG, new Color(`&3[Discom] &aLoaded (Event): &e➜ &3${fileName}`, { json: false }).getText());
+            this.client.emit(Events.LOG, new Color(`&b[&3Discom&b] &3Loaded Event: &b➜ &9${fileName}`, { json: false }).getText());
         }
     }
 

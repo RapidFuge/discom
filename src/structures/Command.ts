@@ -1,30 +1,46 @@
-import type { DiscomClient, OptionsCommandsSlash, OptionsCommandsContext, GuildLanguageTypes } from '../base/Client';
-import type { Snowflake, InteractionReplyOptions, AutocompleteInteraction, CommandInteraction, InteractionDeferReplyOptions, MessagePayload, ContextMenuInteraction, GuildMember, Message, Guild, TextChannel, NewsChannel, ThreadChannel, User, DMChannel } from 'discord.js';
+import type { DiscomClient, OptionsCommandsContext } from '../base/Client';
+import type { Snowflake, InteractionReplyOptions, ApplicationCommandOption, AutocompleteInteraction, CommandInteraction, InteractionDeferReplyOptions, MessagePayload, ContextMenuCommandInteraction, GuildMember, Message, Guild, TextChannel, NewsChannel, ThreadChannel, User, DMChannel, ModalBuilder } from 'discord.js';
 import { ArgumentChannelTypes, ArgumentType } from '../util/Constants';
 import { DiscomError } from './DiscomError';
 
+export interface AutocompleteRunOptions {
+    client: DiscomClient;
+    interaction: AutocompleteInteraction;
+    member: GuildMember;
+    user: User;
+    guild: Guild;
+    channel: TextChannel | NewsChannel | ThreadChannel | DMChannel;
+    command: Command;
+    locale: string;
+    value: string;
+
+    respond: (choices: Array<ArgumentChoice>) => Promise<void>;
+}
+
+
 export interface CommandRunOptions {
     client: DiscomClient;
-    interaction?: CommandInteraction | ContextMenuInteraction;
+    interaction?: CommandInteraction | ContextMenuCommandInteraction;
     member: GuildMember;
     message?: Message;
     guild: Guild;
     channel: TextChannel | NewsChannel | ThreadChannel | DMChannel;
-    args: Array<string>;
-    objectArgs: any;
+    args: Array<ApplicationCommandOption>;
     command: Command;
     author: User;
-    language: GuildLanguageTypes;
+    locale: string;
 
     reply(options: string | MessagePayload | InteractionReplyOptions): Promise<Message>;
     edit(options: string | MessagePayload | InteractionReplyOptions): Promise<void>;
     followUp(options: string | MessagePayload | InteractionReplyOptions): Promise<void>;
     deferReply(options?: InteractionDeferReplyOptions): Promise<void>;
+    showModal(modal: ModalBuilder): Promise<void>;
     deleteReply(): Promise<void>;
 }
 
 export interface ArgumentChoice {
     name: string;
+    name_localizations: any;
     value: string | number;
 }
 
@@ -35,24 +51,25 @@ export interface CommandArgsAutocompleteOptions {
     guild: Guild;
     channel: TextChannel | NewsChannel | DMChannel;
     member: GuildMember;
-    language: GuildLanguageTypes;
+    locale: string;
     value: string | number;
     respond: (choices: Array<ArgumentChoice>) => Promise<void>;
 }
 
 export interface CommandArgsOptions {
+    type: ArgumentType;
     name: string;
     name_localizations?: any;
     description: string;
     description_localizations?: string;
-    type: ArgumentType;
     required: boolean;
-    prompt?: string;
     choices?: ArgumentChoice[];
     options?: CommandArgsOptions;
     channel_types?: ArgumentChannelTypes[];
     min_value?: number;
     max_value?: number;
+    min_length?: number;
+    max_length?: number;
     autocomplete?: boolean;
     run?: CommandArgsAutocompleteOptions;
     subcommands?: any;
@@ -66,6 +83,7 @@ export interface CommandOptions {
     description: string;
     description_localizations?: any;
     cooldown?: string;
+    disabled?: boolean;
     args?: Array<CommandArgsOptions>;
     userRequiredPermissions?: string | Array<string>;
     userRequiredRoles?: Snowflake | Array<Snowflake>;
@@ -75,10 +93,8 @@ export interface CommandOptions {
     guildId?: Snowflake | Array<Snowflake>;
     allowDm?: boolean;
     nsfw?: boolean;
-    aliases?: Array<string>;
     category?: string;
     usage?: string;
-    slash?: OptionsCommandsSlash;
     context?: OptionsCommandsContext;
     onError?: (options: CommandRunOptions, error: any) => any;
     run: (options: CommandRunOptions) => any;
@@ -95,6 +111,7 @@ export class Command {
     public description: string;
     public description_localizations: any;
     public cooldown?: string;
+    public disabled?: boolean;
     public args?: Array<CommandArgsOptions>;
     public clientRequiredPermissions?: Array<string>;
     public userRequiredPermissions?: Array<string>;
@@ -103,10 +120,8 @@ export class Command {
     public guildId?: Array<Snowflake>;
     public channelId?: Array<Snowflake>;
     public nsfw?: boolean;
-    public slash?: OptionsCommandsSlash;
     public context?: OptionsCommandsContext;
     public usage?: string;
-    public aliases?: Array<string>;
     public allowDm?: boolean;
     public category?: string;
     public _path: string;
@@ -145,6 +160,11 @@ export class Command {
          * @type {string | number}
          */
         this.cooldown = options.cooldown;
+        /**
+         * Determines if the command would be enabled or disabled.
+         * @type {boolean}
+         */
+        this.disabled = options.disabled;
         /**
          * The arguments/options of the command. This is the arguments that are used to call the command.
          * @type {Array<CommandArgsOptions>}
@@ -203,19 +223,9 @@ export class Command {
          */
         this.nsfw = String(options.nsfw).toLowerCase() === 'true';
         /**
-         * If the command should be: Message Only, Slash Only, Both, Or None.
-         * @type {OptionsCommandsSlash}
-         */
-        this.slash = options.slash;
-        /**
          * If the command should be: User Only, Message Only, Both, Or None. See more info here: https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-types
          */
         this.context = options.context;
-        /**
-         * The aliases of the commands. Only works for Message commands. Aliases are not supported for Slash commands.
-         * @type {Array<string>}
-         */
-        this.aliases = options.aliases ? Array.isArray(options.aliases) ? options.aliases : Array(options.aliases) : [];
         /**
          * The category of the command. This is used to group commands together.
          * @type {string}

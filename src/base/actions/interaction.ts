@@ -2,6 +2,17 @@ import type { DiscomClient } from '../Client';
 
 export default (client: DiscomClient) => {
     client.on('interactionCreate', interaction => {
+        if (interaction.isCommand()) {
+            /**
+             * Emitted when a button interaction is created.
+             * @event DiscomClient#slashCommand
+             * @param {CommandInteraction} interaction The slash command interaction that was created
+             * @example client.on('slashCommand', interaction => {
+             * console.log(`Command '${interaction.command.name}' was used.`);
+             * });
+             */
+            client.emit('slashCommand', interaction)
+        }
         if (interaction.isButton()) {
             /**
              * Emitted when a button interaction is created.
@@ -13,7 +24,7 @@ export default (client: DiscomClient) => {
              */
             client.emit('clickButton', interaction);
         }
-        if (interaction.isSelectMenu()) {
+        if (interaction.isStringSelectMenu()) {
             /**
              * Emitted when a select menu interaction is created.
              * @event DiscomClient#selectMenu
@@ -25,7 +36,7 @@ export default (client: DiscomClient) => {
             client.emit('selectMenu', interaction);
         }
 
-        if (interaction.isContextMenu()) {
+        if (interaction.isContextMenuCommand()) {
             /**
              * Emitted when a context menu interaction is created.
              * @event DiscomClient#contextMenu

@@ -81,7 +81,6 @@ const Events = {
 };
 
 type ArgumentType = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
-
 const ArgumentType = {
     SUB_COMMAND: 1,
     SUB_COMMAND_GROUP: 2,
@@ -96,20 +95,21 @@ const ArgumentType = {
     ATTACHMENT: 11,
 };
 
-type ArgumentChannelTypes = 'DM' | 'GUILD_TEXT' | 'GUILD_VOICE' | 'GUILD_CATEGORY' | 'GUILD_NEWS' | 'GUILD_STORE' | 'GUILD_NEWS_THREAD' | 'GUILD_PUBLIC_THREAD' | 'GUILD_PRIVATE_THREAD' | 'GUILD_STAGE_VOICE';
-
-const ArgumentChannelTypes = {
-    DM: 1,
-    GUILD_TEXT: 0,
-    GUILD_VOICE: 2,
-    GUILD_CATEGORY: 4,
-    GUILD_NEWS: 5,
-    GUILD_STORE: 6,
-    GUILD_NEWS_THREAD: 10,
-    GUILD_PUBLIC_THREAD: 11,
-    GUILD_PRIVATE_THREAD: 12,
-    GUILD_STAGE_VOICE: 13,
-};
+type ArgumentChannelTypes = 'GUILD_TEXT' | 'DM' | 'GUILD_VOICE' | 'GROUP_DM' | 'GUILD_CATEGORY' | 'GUILD_ANNOUNCEMENT' | 'ANNOUNCEMENT_THREAD' | 'PUBLIC_THREAD' | 'PRIVATE_THREAD' | 'GUILD_STAGE_VOICE' | 'GUILD_DIRECTORY' | 'GUILD_FORUM';
+const ArgumentChannelTypes = [
+    'GUILD_TEXT',
+    'DM',
+    'GUILD_VOICE',
+    'GROUP_DM',
+    'GUILD_CATEGORY',
+    'GUILD_ANNOUNCEMENT',
+    'ANNOUNCEMENT_THREAD',
+    'PUBLIC_THREAD',
+    'PRIVATE_THREAD',
+    'GUILD_STAGE_VOICE',
+    'GUILD_DIRECTORY',
+    'GUILD_FORUM',
+];
 
 export {
     ApplicationCommandTypesRaw,
