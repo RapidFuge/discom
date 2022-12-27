@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import type { DiscomClient } from '../base/Client';
 import type { AutocompleteInteraction, CommandInteraction } from 'discord.js';
 import { readdirSync } from 'fs';
@@ -31,6 +30,7 @@ export class EventHandler {
                 const isDmEnabled = ['false'].includes(String(commandos.allowDm));
                 const isClientDmEnabled = !commandos.allowDm && ['false'].includes(String(this.client.allowDm));
                 const isCommandDisabled = commandos.disabled;
+                const isSlashDisabled = commandos.slashDisabled;
                 const isContextEnabled = String(commandos.context) === 'false';
                 const isClientContextEnabled = String(this.client.context) === 'false';
 
@@ -40,12 +40,12 @@ export class EventHandler {
                 if (!isNotDm && isDmEnabled) return;
                 if (!isNotDm && isClientDmEnabled) return;
                 if (interaction.isCommand() && isCommandDisabled) return;
+                if (interaction.isCommand() && isSlashDisabled) return;
                 if (interaction.isContextMenuCommand() && isContextEnabled) return;
                 if (interaction.isContextMenuCommand() && !commandos.context && isClientContextEnabled) return;
 
                 const language = interaction.guild ? interaction.guildLocale : this.client.language;
-
-                const cooldown = interaction.guild ? await this.client.dispatcher.getCooldown(interaction.guild.id, interaction.user.id, commandos) : null;
+                const cooldown = interaction.guild ? await this.client.dispatcher.getCooldown(interaction.user.id, commandos) : null;
                 const getCooldownMessage = () => this.client.languageFile.COOLDOWN[language].replace(/{COOLDOWN}/g, ms(cooldown.wait, { long: true })).replace(/{CMDNAME}/g, commandos.name);
 
                 if (cooldown?.cooldown) return interaction.reply(getCooldownMessage());
@@ -64,7 +64,7 @@ export class EventHandler {
                     } else if (interaction.channel.id !== commandos.channelOnly) { return; }
                 }
 
-                // @ts-ignore
+                // @ts-expect-error If the channel has no nsfw tag, then its not nsfw?
                 const NSFW = interaction.guild ? commandos.nsfw && !interaction.channel.nsfw : null;
                 const getNsfwMessage = () => this.client.languageFile.NSFW[language];
 
@@ -84,7 +84,7 @@ export class EventHandler {
                 const getMissingPermissionsMessage = () => this.client.languageFile.MISSING_PERMISSIONS[language].replace('{PERMISSION}', commandos.userRequiredPermissions.map(v => Util.unescape(v, '_', ' ')).join(', '));
 
                 if (isNotDm && commandos.userRequiredPermissions.length) {
-                    // @ts-ignore
+                    // @ts-expect-error Has function exists on PermissionsBitField
                     if (!interaction.member.permissions.has(commandos.userRequiredPermissions)) {
                         return interaction.reply({
                             content: getMissingPermissionsMessage(),
@@ -96,7 +96,7 @@ export class EventHandler {
                 const getMissingRolesMessage = () => this.client.languageFile.MISSING_ROLES[language].replace('{ROLES}', `\`${commandos.userRequiredRoles.map(r => interaction.guild.roles.cache.get(r).name).join(', ')}\``);
 
                 if (isNotDm && commandos.userRequiredRoles.length) {
-                    // @ts-ignore
+                    // @ts-expect-error cache field exists on GuildMemberRoleManager
                     const roles = commandos.userRequiredRoles.some(v => interaction.member.roles.cache.get(v));
                     if (!roles) return interaction.reply({ content: getMissingRolesMessage(), ephemeral: true });
                 }
@@ -137,7 +137,7 @@ export class EventHandler {
 
                 await Promise.resolve(commandos.run(runOptions)).catch(async error => {
                     this.client.emit(Events.COMMAND_ERROR, { command: commandos, member: interaction.member, channel: interaction.channel, guild: interaction.guild, error });
-                    if (typeof commandos.onError === 'function') await Promise.resolve(commandos.onError(runOptions, error));
+                    if (typeof commandos.onError === 'function') return Promise.resolve(commandos.onError(runOptions, error));
                 });
 
                 this.client.emit(Events.COMMAND_EXECUTE, { command: commandos, member: interaction.member, channel: interaction.channel, guild: interaction.guild });

@@ -4,6 +4,9 @@ const ApplicationCommandTypesRaw = {
     user: 2,
     message: 3,
     both: 4,
+    2: 2,
+    3: 3,
+    4: 4,
 };
 
 type Events = 'DEBUG' | 'LOG' | 'COMMAND_EXECUTE' | 'COMMAND_ERROR' | 'COMMANDS_LOADED' | 'COMMAND_NOT_FOUND' | 'AUTOCOMPLETE_EXECUTE' | 'AUTOCOMPLETE_ERROR' | 'AUTOCOMPLETE_NOT_FOUND';
@@ -93,6 +96,17 @@ const ArgumentType = {
     MENTIONABLE: 9,
     NUMBER: 10,
     ATTACHMENT: 11,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10,
+    11: 11,
 };
 
 type ArgumentChannelTypes = 'GUILD_TEXT' | 'DM' | 'GUILD_VOICE' | 'GROUP_DM' | 'GUILD_CATEGORY' | 'GUILD_ANNOUNCEMENT' | 'ANNOUNCEMENT_THREAD' | 'PUBLIC_THREAD' | 'PRIVATE_THREAD' | 'GUILD_STAGE_VOICE' | 'GUILD_DIRECTORY' | 'GUILD_FORUM';

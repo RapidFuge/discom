@@ -31,7 +31,7 @@ export class Dispatcher {
         }
     }
 
-    async getCooldown(guildId, userId, command) {
+    async getCooldown(userId, command) {
         if (this.application && this.application.owners.some(user => user.id === userId)) return { cooldown: false };
         const now = Date.now();
         const cooldown = command.cooldown ? ms(command.cooldown) : ms(this.client.defaultCooldown);

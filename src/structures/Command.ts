@@ -14,15 +14,13 @@ export interface AutocompleteRunOptions {
     locale: string;
     value: string;
 
-    respond: (choices: Array<ArgumentChoice>) => Promise<void>;
+    respond(choices: Array<ArgumentChoice>): Promise<void>;
 }
-
 
 export interface CommandRunOptions {
     client: DiscomClient;
     interaction?: CommandInteraction | ContextMenuCommandInteraction;
     member: GuildMember;
-    message?: Message;
     guild: Guild;
     channel: TextChannel | NewsChannel | ThreadChannel | DMChannel;
     args: Array<ApplicationCommandOption>;
@@ -44,7 +42,7 @@ export interface ArgumentChoice {
     value: string | number;
 }
 
-export interface CommandArgsAutocompleteOptions {
+export interface CommandAutocompleteOptions {
     interaction: AutocompleteInteraction;
     client: DiscomClient;
     command: Command;
@@ -53,38 +51,40 @@ export interface CommandArgsAutocompleteOptions {
     member: GuildMember;
     locale: string;
     value: string | number;
-    respond: (choices: Array<ArgumentChoice>) => Promise<void>;
+
+    respond(choices: Array<ArgumentChoice>): Promise<void>;
 }
 
-export interface CommandArgsOptions {
+export interface CommandArgumentOptions {
     type: ArgumentType;
     name: string;
     name_localizations?: any;
     description: string;
-    description_localizations?: string;
+    description_localizations?: any;
     required: boolean;
     choices?: ArgumentChoice[];
-    options?: CommandArgsOptions;
+    options?: Array<CommandOptions>;
     channel_types?: ArgumentChannelTypes[];
     min_value?: number;
     max_value?: number;
     min_length?: number;
     max_length?: number;
     autocomplete?: boolean;
-    run?: CommandArgsAutocompleteOptions;
     subcommands?: any;
+    run?(options: CommandAutocompleteOptions): Promise<void>;
 }
 
 export interface CommandOptions {
     client?: DiscomClient;
     name: string;
-    name_localizations?: any;
+    nameLocalizations?: any;
     contextMenuName?: string;
     description: string;
-    description_localizations?: any;
+    descriptionLocalizations?: any;
     cooldown?: string;
     disabled?: boolean;
-    args?: Array<CommandArgsOptions>;
+    isSlashDisabled?: boolean;
+    options?: Array<CommandArgumentOptions>;
     userRequiredPermissions?: string | Array<string>;
     userRequiredRoles?: Snowflake | Array<Snowflake>;
     clientRequiredPermissions?: string | Array<string>;
@@ -96,8 +96,8 @@ export interface CommandOptions {
     category?: string;
     usage?: string;
     context?: OptionsCommandsContext;
-    onError?: (options: CommandRunOptions, error: any) => any;
-    run: (options: CommandRunOptions) => any;
+    onError?(options: CommandRunOptions, error: any): Promise<void>;
+    run?(options: CommandRunOptions): Promise<void>;
 }
 
 /**
@@ -106,13 +106,14 @@ export interface CommandOptions {
 export class Command {
     public client: DiscomClient;
     public name: string;
-    public name_localizations: any;
+    public nameLocalizations: any;
     public contextMenuName?: string;
     public description: string;
-    public description_localizations: any;
+    public descriptionLocalizations: any;
     public cooldown?: string;
     public disabled?: boolean;
-    public args?: Array<CommandArgsOptions>;
+    public isSlashDisabled?: boolean;
+    public options?: Array<CommandArgumentOptions>;
     public clientRequiredPermissions?: Array<string>;
     public userRequiredPermissions?: Array<string>;
     public userRequiredRoles?: Array<Snowflake>;
@@ -139,7 +140,7 @@ export class Command {
          * The name of the command. But in different languages. see the list of discord locales [here](https://discord.com/developers/docs/reference#locales)
          * @type {any}
          */
-        this.name_localizations = options.name_localizations || {};
+        this.nameLocalizations = options.nameLocalizations || {};
         /**
          * The context menu name of the command. This is the name that is used to call the command in the context menu if this is defined. If not, the name is used.
          * @type {string}
@@ -154,7 +155,7 @@ export class Command {
          * The description of the command. But in different languages. see the list of discord locales [here](https://discord.com/developers/docs/reference#locales)
          * @type {any}
          */
-        this.description_localizations = options.description_localizations || {};
+        this.descriptionLocalizations = options.descriptionLocalizations || {};
         /**
          * The cooldown of the command. This is the time in seconds that the bot has to wait before being able to be used again.
          * @type {string | number}
@@ -166,10 +167,15 @@ export class Command {
          */
         this.disabled = options.disabled;
         /**
-         * The arguments/options of the command. This is the arguments that are used to call the command.
-         * @type {Array<CommandArgsOptions>}
+         * Determines if the command can be used on slash command interactions.
+         * @type {boolean}
          */
-        this.args = options.args ? options.args.map(arg => {
+        this.isSlashDisabled = options.isSlashDisabled;
+        /**
+         * The arguments/options of the command. This is the arguments that are used to call the command.
+         * @type {Array<CommandArgumentOptions>}
+         */
+        this.options = options.options ? options.options.map(arg => {
             const types = arg.channel_types ? !Array.isArray(arg.channel_types) ? [arg.channel_types] : arg.channel_types : [];
             const final = [];
 

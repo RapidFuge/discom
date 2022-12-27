@@ -10,12 +10,6 @@ import ms from 'ms';
 import { Util } from '../util/util';
 import { Command } from '../structures/Command';
 
-const quickTypeConst = {
-    1: 'CHAT_INPUT',
-    2: 'USER',
-    3: 'MESSAGE',
-};
-
 /**
  * The command loader class.
  */
@@ -96,13 +90,13 @@ export class CommandLoader {
                 if (this.client.loadFromCache) {
                     let ifAlready;
                     let cache = true;
-                    if (guildId) ifAlready = (await Util.__getAllCommands(this.client, guildId)).find(c => c.name === cmd.name && quickTypeConst[c.type] === 'CHAT_INPUT');
-                    else ifAlready = (await this._allGlobalCommands).find(c => c.name === cmd.name && quickTypeConst[c.type] === 'CHAT_INPUT');
+                    if (guildId) ifAlready = (await Util.__getAllCommands(this.client, guildId)).find(c => c.name === cmd.name && c.type === 1);
+                    else ifAlready = (await this._allGlobalCommands).find(c => c.name === cmd.name && c.type === 1);
 
                     if (ifAlready) {
                         if (ifAlready.defaultMemberPermission && !cmd.userId.length) cache = false;
                         if (ifAlready.description !== cmd.description) cache = false;
-                        cmd.args.forEach(a => {
+                        cmd.options.forEach(a => {
                             ifAlready.options.forEach(a2 => {
                                 if (a.name !== a2.name) cache = false;
                                 if (JSON.stringify(a.name_localizations || {}) !== JSON.stringify(a2.name_localizations || {})) cache = false;
@@ -128,8 +122,8 @@ export class CommandLoader {
                 }
 
                 const finalArgs = [];
-                if (cmd.args && cmd.args.length > 0) {
-                    for (let arg of cmd.args) {
+                if (cmd.options && cmd.options.length > 0) {
+                    for (let arg of cmd.options) {
                         if (typeof arg.run === 'function') {
                             arg = {
                                 ...arg,
@@ -150,7 +144,9 @@ export class CommandLoader {
                     },
                     body: JSON.stringify({
                         name: cmd.name,
+                        name_localizations: cmd.nameLocalizations,
                         description: cmd.description,
+                        description_localizations: cmd.descriptionLocalizations,
                         options: finalArgs,
                         type: 1,
                         default_permission: guildId ? !cmd.userId.length : true,
@@ -218,8 +214,8 @@ export class CommandLoader {
                 if (this.client.loadFromCache) {
                     let ifAlready;
                     let cache = true;
-                    if (guildId) ifAlready = (await Util.__getAllCommands(this.client, guildId)).find(c => c.name === cmd.name && ['USER', 'MESSAGE'].includes(quickTypeConst[c.type]));
-                    else ifAlready = (await this._allGlobalCommands).find(c => c.name === cmd.name && ['USER', 'MESSAGE'].includes(quickTypeConst[c.type]));
+                    if (guildId) ifAlready = (await Util.__getAllCommands(this.client, guildId)).find(c => c.name === cmd.name && [2, 3].includes(c.type));
+                    else ifAlready = (await this._allGlobalCommands).find(c => c.name === cmd.name && [2, 3].includes(c.type));
 
                     if (ifAlready) {
                         if (cmd.contextMenuName && ifAlready.name === cmd.contextMenuName) cache = false;
@@ -393,11 +389,11 @@ export class CommandLoader {
             };
             if (cmd.guildId.length) {
                 for (const guildId of cmd.guildId) {
-                    const apiCommands = (await Util.__getAllCommands(this.client, guildId)).filter(c => c.name === cmd.name && c.type === 'CHAT_INPUT');
+                    const apiCommands = (await Util.__getAllCommands(this.client, guildId)).filter(c => c.name === cmd.name && c.type === 1);
                     await loadCommandPermission(apiCommands);
                 }
             } else {
-                const apiCommands = (await this._allGlobalCommands).filter(c => c.name === cmd.name && quickTypeConst[c.type] === 'CHAT_INPUT');
+                const apiCommands = (await this._allGlobalCommands).filter(c => c.name === cmd.name && c.type === 1);
                 await loadCommandPermission(apiCommands);
             }
         }
@@ -426,19 +422,20 @@ export class CommandLoader {
         if (!appCommands || appCommands.size < 0) return;
         for (const appCommand of appCommands) {
             const cmd = appCommand[1];
-            if (!commandFiles.some(c => cmd.name === c) && quickTypeConst[cmd.type] === 'CHAT_INPUT') Util.__deleteCmd(this.client, cmd.id);
+            if (!commandFiles.some(c => cmd.name === c) && cmd.type === 1) Util.__deleteCmd(this.client, cmd.id);
             const command = this.client.commands.find(c => c.name === cmd.name || c.contextMenuName === cmd.name);
 
             if (!command) Util.__deleteCmd(this.client, cmd.id);
-            else if (quickTypeConst[cmd.type] === 'CHAT_INPUT' && command.disabled) Util.__deleteCmd(this.client, cmd.id);
-            else if (quickTypeConst[cmd.type] === 'USER' && command.context && ['false', 'message'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id);
-            else if (quickTypeConst[cmd.type] === 'USER' && !command.context && ['false', 'message'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id);
-            else if (quickTypeConst[cmd.type] === 'MESSAGE' && command.context && ['false', 'user'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id);
-            else if (quickTypeConst[cmd.type] === 'MESSAGE' && !command.context && ['false', 'user'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id);
+            else if (cmd.type === 1 && command.disabled) Util.__deleteCmd(this.client, cmd.id);
+            else if (cmd.type === 1 && command.isSlashDisabled) Util.__deleteCmd(this.client, cmd.id);
+            else if (cmd.type === 2 && command.context && ['false', 'message'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id);
+            else if (cmd.type === 2 && !command.context && ['false', 'message'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id);
+            else if (cmd.type === 3 && command.context && ['false', 'user'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id);
+            else if (cmd.type === 3 && !command.context && ['false', 'user'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id);
             else if (command.guildId.length) Util.__deleteCmd(this.client, cmd.id);
             else continue;
 
-            this.client.emit(Events.LOG, new Color(`&b[&3Discom&b] &2Deleted ${quickTypeConst[cmd.type] === 'CHAT_INPUT' ? 'Slash' : 'Context'} &b➜ &9${cmd.name}`, { json: false }).getText());
+            this.client.emit(Events.LOG, new Color(`&b[&3Discom&b] &2Deleted ${cmd.type === 1 ? 'Slash' : 'Context'} &b➜ &9${cmd.name}`, { json: false }).getText());
         }
 
         const guilds = this.client.guilds.cache.map(guild => guild.id);
@@ -448,19 +445,20 @@ export class CommandLoader {
 
             for (const guildCommand of guildCommands) {
                 const cmd = guildCommand[1];
-                if (!commandFiles.some(c => cmd.name === c) && quickTypeConst[cmd.type] === 'CHAT_INPUT') Util.__deleteCmd(this.client, cmd.id, guild);
+                if (!commandFiles.some(c => cmd.name === c) && cmd.type === 1) Util.__deleteCmd(this.client, cmd.id, guild);
                 const command = this.client.commands.find(c => c.name === cmd.name || c.contextMenuName === cmd.name);
 
                 if (!command) Util.__deleteCmd(this.client, cmd.id, guild);
-                else if (quickTypeConst[cmd.type] === 'CHAT_INPUT' && command.disabled) Util.__deleteCmd(this.client, cmd.id, guild);
-                else if (quickTypeConst[cmd.type] === 'USER' && command.context && ['false', 'message'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id, guild);
-                else if (quickTypeConst[cmd.type] === 'USER' && !command.context && ['false', 'message'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id, guild);
-                else if (quickTypeConst[cmd.type] === 'MESSAGE' && command.context && ['false', 'user'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id, guild);
-                else if (quickTypeConst[cmd.type] === 'MESSAGE' && !command.context && ['false', 'user'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id, guild);
+                else if (cmd.type === 1 && command.disabled) Util.__deleteCmd(this.client, cmd.id, guild);
+                else if (cmd.type === 1 && command.isSlashDisabled) Util.__deleteCmd(this.client, cmd.id, guild);
+                else if (cmd.type === 2 && command.context && ['false', 'message'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id, guild);
+                else if (cmd.type === 2 && !command.context && ['false', 'message'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id, guild);
+                else if (cmd.type === 3 && command.context && ['false', 'user'].includes(String(command.context))) Util.__deleteCmd(this.client, cmd.id, guild);
+                else if (cmd.type === 3 && !command.context && ['false', 'user'].includes(String(this.client.context))) Util.__deleteCmd(this.client, cmd.id, guild);
                 else if (!(command.guildId.length && command.guildId.includes(guild))) Util.__deleteCmd(this.client, cmd.id, guild);
                 else continue;
 
-                this.client.emit(Events.LOG, new Color(`&b[&3Discom&b] &2Deleted ${quickTypeConst[cmd.type] === 'CHAT_INPUT' ? 'Slash' : 'Context'} (guild: ${guild}) &b➜ &9${cmd.name}`, { json: false }).getText());
+                this.client.emit(Events.LOG, new Color(`&b[&3Discom&b] &2Deleted ${cmd.type === 1 ? 'Slash' : 'Context'} (guild: ${guild}) &b➜ &9${cmd.name}`, { json: false }).getText());
             }
         }
     }

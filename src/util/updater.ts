@@ -1,4 +1,3 @@
-// import fetch from 'node-fetch';
 import { Color } from '../index';
 const { version } = require('../../package.json');
 

@@ -37,9 +37,8 @@ If you're still in trouble, Make an issue on [GitHub](https://github.com/rapidfu
 
 ## Features
 
-- Slash and Legacy command handler, Event handler
-- Supports slash, legacy and context menus commands
+- Slash and Event handler
+- Supports slash, and context menus commands
 - Supports custom i18n messages
-- Supports discord.js v13+
-- Simply have a legacy and slash command in 1 file
-- Supports all types of arguments -->
+- Supports discord.js v14+
+- Supports all types of interaction options

@@ -11,7 +11,7 @@ export default (client: DiscomClient) => {
              * console.log(`Command '${interaction.command.name}' was used.`);
              * });
              */
-            client.emit('slashCommand', interaction)
+            client.emit('slashCommand', interaction);
         }
         if (interaction.isButton()) {
             /**
